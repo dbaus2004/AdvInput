@@ -1,6 +1,8 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using CIS580.Input;
 
 namespace AdvancedInputExercise;
 
@@ -38,6 +40,16 @@ public class Knight
     private float _movementSpeed = 100.0f; // Speed of the knight's movement
     private Vector2 _position = new Vector2(100, 400);
 
+    private IInputState _inputState;
+    private InputAction _moveLeft;
+    private InputAction _moveRight;
+    private InputAction _jump;
+
+    public Knight(Game game)
+    {
+        _inputState = game.Services.GetService<IInputState>();
+    }
+
     /// <summary>
     /// Load the animations for the knight sprite
     /// </summary>
@@ -48,6 +60,10 @@ public class Knight
         _animations[(int)KnightState.Running] = content.Load<Texture2D>("Knight/_Run");
         _animations[(int)KnightState.Jumping] = content.Load<Texture2D>("Knight/_Jump");
         _animations[(int)KnightState.Falling] = content.Load<Texture2D>("Knight/_Fall");
+    
+        _moveLeft = new InputAction(new Buttons[] {Buttons.DPadLeft}, new Keys[] {Keys.Left, Keys.A}, false);
+        _moveRight = new InputAction(new Buttons[] {Buttons.DPadRight}, new Keys[] {Keys.Right, Keys.D}, false);
+        _jump = new InputAction(new Buttons[] {Buttons.DPadUp}, new Keys[] {Keys.Up, Keys.W, Keys.Space}, false);
     }
 
     /// <summary>
@@ -56,11 +72,12 @@ public class Knight
     /// <param name="gameTime">The current game time</param>
     public void Update(GameTime gameTime) 
     {
+        PlayerIndex controllingPlayer;
         // Default to idle state at the start of each update
         _currentState = KnightState.Idle; 
 
         // Trigger jump if pressed and not already jumping or falling
-        if(false && !_isJumping && !_isFalling) // TODO: Check for jump input 
+        if(_jump.Occured(_inputState, null, out controllingPlayer) && !_isJumping && !_isFalling) // TODO: Check for jump input 
         {
             _isJumping = true;
             _jumpTimer = 0.0f; // Reset jump timer
@@ -99,7 +116,7 @@ public class Knight
         }
 
         // Handle left and right movement
-        if(false) // TODO: Check for left movement 
+        if(_moveLeft.Occured(_inputState, null, out controllingPlayer)) // TODO: Check for left movement 
         {
             if(_isFacingRight) 
             {
@@ -112,7 +129,7 @@ public class Knight
                 _currentState = KnightState.Running;
             }
         } 
-        else if(false) // TODO: Check for right movement 
+        else if(_moveRight.Occured(_inputState, null, out controllingPlayer)) // TODO: Check for right movement 
         {
             if(!_isFacingRight) 
             {
